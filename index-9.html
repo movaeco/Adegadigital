@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Adega Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0B0B0B; --ink-soft:#3A3A3A; --ink-faint:#8A8A86;
+  --paper:#FFFFFF; --panel:#FAFAF8; --line:#E4E3DF; --line-strong:#0B0B0B;
+  --bg:#FFFFFF; --surface:#FFFFFF; --surface-2:#F3F3F0; --border:#E4E3DF;
+  --text:#0B0B0B; --text-muted:#7A7A76; --ok:#0B0B0B;
+  --radius:3px; --radius-lg:5px;
+  --shadow-card:0 1px 2px rgba(11,11,11,.04);
+  --shadow-lift:0 18px 30px -18px rgba(11,11,11,.35);
+  --shadow-modal:0 30px 60px -20px rgba(11,11,11,.45);
+  box-sizing:border-box;
+}
+*,*::before,*::after{box-sizing:inherit;margin:0;padding:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Work Sans',system-ui,sans-serif;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,.serif{font-family:'Fraunces',serif;font-weight:500;letter-spacing:-.01em}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;transition:opacity .15s ease,background-color .15s ease,border-color .15s ease,transform .15s ease}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+input,select,textarea{font-family:inherit;background:var(--paper);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:.65rem .75rem;font-size:.92rem;transition:border-color .15s ease}
+input::placeholder,textarea::placeholder{color:var(--ink-faint)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ink)}
+a{color:inherit}
+img{display:block;max-width:100%}
+.hide{display:none!important}
+
+/* ---------- Customer shell ---------- */
+#customer{max-width:1120px;margin:0 auto;padding:0 0 6rem}
+.cust-header{
+  position:sticky;top:0;z-index:10;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);
+  padding:1.35rem 1.5rem 1.1rem;border-bottom:1px solid var(--line);
+}
+.brand-row{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;margin-bottom:1.05rem}
+.brand-row h1{font-size:1.65rem;font-weight:500;letter-spacing:-.01em}
+.brand-row span{font-style:italic;font-weight:400}
+.count-tag{font-size:.76rem;color:var(--text-muted);white-space:nowrap;padding-top:.15rem}
+.search-row{display:flex;gap:.6rem}
+.search-row input{flex:1;background:var(--panel)}
+.filter-toggle{border:1px solid var(--border);padding:.65rem 1rem;border-radius:var(--radius);font-size:.84rem;white-space:nowrap;background:var(--paper)}
+.filter-toggle:hover{border-color:var(--ink)}
+.filter-toggle.active{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+
+.filters{padding:1rem 1.5rem;border-bottom:1px solid var(--line);display:grid;gap:.85rem;grid-template-columns:1fr 1fr;background:var(--panel)}
+.filters label{display:block;font-size:.72rem;color:var(--text-muted);margin-bottom:.35rem;letter-spacing:.01em}
+.filters select,.filters input{background:var(--paper)}
+.price-inputs{display:flex;gap:.5rem;align-items:center}
+.price-inputs span{color:var(--ink-faint)}
+.price-inputs input{width:100%}
+.filters .full{grid-column:1/-1}
+.pill-group{display:flex;flex-wrap:wrap;gap:.5rem}
+.clear-filters{grid-column:1/-1;text-align:right;font-size:.8rem;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
+.clear-filters:hover{color:var(--ink)}
+
+.tab-row{display:flex;gap:.5rem;overflow-x:auto;padding:.2rem .02rem;scrollbar-width:none;-ms-overflow-style:none}
+.tab-row::-webkit-scrollbar{display:none}
+.country-tabs{margin-top:1rem}
+.tab-btn{flex:0 0 auto;padding:.55rem 1.05rem;border-radius:99px;font-size:.85rem;font-weight:500;border:1px solid var(--border);background:var(--paper);white-space:nowrap;transition:background-color .15s ease,color .15s ease,border-color .15s ease}
+.tab-btn:hover{border-color:var(--ink)}
+.tab-btn.active{background:var(--ink);color:#FFFFFF;border-color:var(--ink)}
+.country-tabs .tab-btn{font-size:.78rem;padding:.42rem .9rem;color:var(--text-muted);border-color:var(--line)}
+.country-tabs .tab-btn.active{background:var(--ink);color:#FFFFFF;border-color:var(--ink)}
+
+.catalog{padding:1.25rem;display:grid;gap:1rem;grid-template-columns:repeat(2,1fr)}
+@media(min-width:520px){.catalog{padding:1.5rem;gap:1.5rem}}
+@media(min-width:900px){.catalog{grid-template-columns:repeat(3,1fr);gap:1.75rem;padding:1.75rem}}
+.wine-card.reveal{opacity:0;transform:translateY(32px)}
+.wine-card.reveal.in{opacity:1;transform:translateY(0);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease,border-color .22s ease}
+.wine-card.reveal.in:hover{transform:translateY(-3px)}
+@media(prefers-reduced-motion:reduce){.wine-card.reveal{opacity:1;transform:none}}
+.wine-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;text-align:left;box-shadow:var(--shadow-card);transition:transform .22s cubic-bezier(.2,.7,.3,1),box-shadow .22s ease,border-color .22s ease}
+.wine-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lift);border-color:#CFCFC9}
+.wine-card .thumb{aspect-ratio:3/4;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px solid var(--line)}
+.wine-card .thumb img{width:100%;height:100%;object-fit:contain;padding:6%;transition:transform .4s ease}
+.wine-card:hover .thumb img{transform:scale(1.045)}
+.wine-card .info{padding:.85rem .9rem 1rem}
+.cat-pill{display:inline-block;font-size:.64rem;letter-spacing:.02em;color:var(--ink-soft);border:1px solid var(--line);border-radius:99px;padding:.15rem .55rem;margin-bottom:.55rem}
+.wine-card h3{font-size:1.02rem;font-weight:500;line-height:1.28;margin-bottom:.2rem}
+.wine-card .origin{font-size:.79rem;color:var(--text-muted);margin-bottom:.6rem}
+.wine-card .price{font-size:.96rem;font-weight:600;font-variant-numeric:tabular-nums}
+.empty-state{padding:4rem 1.25rem;text-align:center;color:var(--text-muted)}
+.empty-state h3{color:var(--text);font-weight:500;margin-bottom:.4rem}
+.cust-footer{padding:2.2rem 1.5rem 1rem;text-align:center;border-top:1px solid var(--line);margin-top:1rem}
+.cust-footer a{font-size:.78rem;color:var(--text-muted);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
+.cust-footer a:hover{color:var(--ink)}
+
+/* bottom nav (cliente) */
+.cust-nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:.35rem .5rem calc(.35rem + env(safe-area-inset-bottom,0px))}
+.cust-nav .nav-item{flex:1;max-width:200px;display:flex;flex-direction:column;align-items:center;gap:.2rem;padding:.45rem .3rem;color:var(--ink-faint);font-size:.7rem;font-weight:500;letter-spacing:.02em;border-radius:var(--radius)}
+.cust-nav .nav-item svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.cust-nav .nav-item:hover{color:var(--ink)}
+.cust-nav .nav-item.active{color:var(--ink)}
+.cust-nav .nav-item.active span{border-bottom:2px solid var(--ink);padding-bottom:1px}
+.rank-page{max-width:640px;margin:0 auto;padding:1.6rem 1.25rem .4rem}
+.rank-page .rank-sub{font-size:.85rem;color:var(--text-muted);margin:.25rem 0 1rem}
+.rank-item .rank-thumb{width:46px;height:58px;border-radius:var(--radius);object-fit:contain;background:#fff;flex-shrink:0}
+.rank-item .rank-info{flex:1;min-width:0}
+.rank-item .rank-info .rank-name{display:block}
+.rank-item .rank-meta{display:block;font-size:.76rem;color:var(--text-muted);margin-top:.1rem}
+.rank-item.top .rank-meta{color:rgba(255,255,255,.7)}
+.rank-item .rank-price{font-size:.92rem;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rl-inline{max-width:520px;margin:0 auto;padding:1.6rem 1.4rem 1.5rem}
+.rl-inline .close-btn{display:none}
+
+/* harmonização (botão + pratos da casa) */
+.pair-btn{display:flex;align-items:center;justify-content:space-between;gap:.6rem;width:100%;padding:.8rem 1rem;margin:0 0 1.1rem;border:1px solid var(--ink);border-radius:var(--radius);font-size:.9rem;font-weight:500;text-align:left}
+.pair-btn:hover{background:var(--ink);color:#fff}
+.pair-btn .chev{transition:transform .2s ease}
+.pair-btn[aria-expanded=true]{background:var(--ink);color:#fff;border-bottom-left-radius:0;border-bottom-right-radius:0;margin-bottom:0}
+.pair-btn[aria-expanded=true] .chev{transform:rotate(180deg)}
+.pair-text{margin:0 0 1.1rem;padding:1rem;background:var(--panel);border:1px solid var(--ink);border-top:none;border-radius:0 0 var(--radius) var(--radius);font-size:.88rem;line-height:1.5}
+.pair-text h4{font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);font-weight:600;margin:0 0 .5rem}
+.pair-text h4:not(:first-child){margin-top:1rem}
+.pair-text .dish{padding:.5rem 0;border-top:1px solid var(--line)}
+.pair-text h4+.dish{border-top:none;padding-top:0}
+.pair-text .dish b{display:block;font-weight:600}
+.pair-text .dish span{display:block;color:var(--text-muted);font-size:.8rem;margin-top:.1rem}
+.pair-pick{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.4rem}
+.pair-pick label{display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;padding:.3rem .7rem;border:1px solid var(--border);border-radius:99px;cursor:pointer;margin:0;color:var(--ink)}
+.pair-pick input{width:auto}
+.pair-pick label:has(input:checked){background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* modal */
+.modal-back{position:fixed;inset:0;background:rgba(11,11,11,.78);z-index:50;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px)}
+@media(min-width:640px){.modal-back{align-items:center}}
+.modal{background:var(--paper);width:100%;max-width:520px;max-height:92vh;overflow-y:auto;border-radius:var(--radius-lg);box-shadow:var(--shadow-modal)}
+.modal .hero{aspect-ratio:1/1;max-height:46vh;width:100%;background:#fff;border-bottom:1px solid var(--line)}
+.modal .hero img{width:100%;height:100%;object-fit:contain;padding:4%}
+.modal-body{padding:1.6rem 1.6rem 2rem}
+.modal-body h2{font-size:1.6rem;font-weight:500;margin-bottom:.25rem}
+.modal-body .origin{color:var(--text-muted);margin-bottom:1rem;font-size:.92rem}
+.modal-price{font-size:1.35rem;font-weight:600;margin-bottom:1.1rem;font-variant-numeric:tabular-nums}
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem 1rem;margin-bottom:1.1rem;font-size:.86rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:.9rem 0}
+.spec-grid dt{color:var(--text-muted);font-size:.72rem;letter-spacing:.02em}
+.spec-grid dd{margin-top:.15rem;font-weight:500}
+.modal-desc{font-size:.92rem;line-height:1.65;color:var(--ink-soft);margin-bottom:1.3rem}
+.avail{display:inline-flex;align-items:center;gap:.5rem;font-size:.82rem}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.seal-tag{display:inline-flex;align-items:center;gap:.55rem;font-size:.78rem;color:var(--text-muted);margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line)}
+.seal-dot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.25);flex-shrink:0}
+.close-btn{position:sticky;top:.9rem;margin-left:auto;margin-right:.9rem;display:flex;align-items:center;justify-content:center;background:rgba(11,11,11,.55);color:#FFFFFF;width:34px;height:34px;border-radius:50%;font-size:1rem;z-index:2}
+.close-btn:hover{background:var(--ink)}
+
+/* ---------- Admin shell ---------- */
+#admin{max-width:1180px;margin:0 auto;padding:1.75rem 1.5rem 4rem}
+.login-box{max-width:340px;margin:15vh auto;background:var(--paper);border:1px solid var(--line);padding:2.25rem;border-radius:var(--radius-lg);box-shadow:var(--shadow-card)}
+.login-box h2{margin-bottom:.35rem}
+.login-box p{color:var(--text-muted);font-size:.85rem;margin-bottom:1.4rem;line-height:1.5}
+.login-box input{width:100%;margin-bottom:.9rem;background:var(--panel)}
+.btn{background:var(--ink);color:#FFFFFF;padding:.7rem 1.2rem;border-radius:var(--radius);font-weight:600;font-size:.9rem;border:1px solid var(--ink)}
+.btn:hover{background:#000000;transform:translateY(-1px)}
+.btn-outline{border:1px solid var(--border);padding:.7rem 1.2rem;border-radius:var(--radius);font-size:.9rem;background:var(--paper)}
+.btn-outline:hover{border-color:var(--ink)}
+.btn-ghost{color:var(--text-muted);font-size:.85rem;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line)}
+.btn-ghost:hover{color:var(--ink)}
+.err{color:var(--text);font-weight:600;font-size:.82rem;min-height:1.2em}
+
+.admin-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.6rem;flex-wrap:wrap;gap:.6rem;padding-bottom:1.1rem;border-bottom:1px solid var(--line)}
+.stat-row{display:grid;grid-template-columns:repeat(2,1fr);gap:.9rem;margin-bottom:1.8rem}
+@media(min-width:720px){.stat-row{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--paper);border:1px solid var(--line);padding:1.1rem 1.2rem;border-radius:var(--radius-lg);box-shadow:var(--shadow-card)}
+.stat .n{font-family:'Fraunces',serif;font-size:2rem;font-weight:500}
+.stat .l{font-size:.78rem;color:var(--text-muted);margin-top:.1rem}
+.admin-toolbar{display:flex;justify-content:space-between;gap:.7rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+.admin-toolbar input{min-width:220px;background:var(--panel)}
+table{width:100%;border-collapse:collapse;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden}
+th,td{padding:.8rem .9rem;text-align:left;font-size:.85rem;border-bottom:1px solid var(--line)}
+th{color:var(--text-muted);font-weight:500;font-size:.72rem;letter-spacing:.02em;background:var(--panel)}
+tr:last-child td{border-bottom:none}
+tbody tr{transition:background-color .15s ease}
+tbody tr:hover{background:var(--panel)}
+.row-name{display:flex;align-items:center;gap:.7rem}
+.row-thumb{width:36px;height:48px;object-fit:contain;background:#fff;border-radius:var(--radius);border:1px solid var(--line)}
+.stock-ctrl{display:inline-flex;align-items:center;gap:.5rem}
+.stock-ctrl button{width:24px;height:24px;border:1px solid var(--border);border-radius:var(--radius);background:var(--paper)}
+.stock-ctrl button:hover{border-color:var(--ink);background:var(--ink);color:#FFFFFF}
+.badge{font-size:.7rem;padding:.2rem .55rem;border-radius:99px}
+.badge.on{color:#FFFFFF;background:var(--ink);border:1px solid var(--ink)}
+.badge.off{color:var(--text-muted);border:1px solid var(--border)}
+.row-actions{display:flex;gap:.6rem;font-size:.78rem}
+.row-actions button{text-decoration:underline;text-underline-offset:3px;color:var(--text-muted);text-decoration-color:var(--line)}
+.row-actions button:hover{color:var(--ink)}
+.tbl-wrap{overflow-x:auto;border-radius:var(--radius-lg)}
+
+/* form modal */
+.form-modal{background:var(--paper);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;border-radius:var(--radius-lg);padding:1.75rem;box-shadow:var(--shadow-modal)}
+.form-modal h2{margin-bottom:1.1rem}
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.f-grid .full{grid-column:1/-1}
+.f-grid label{display:block;font-size:.75rem;color:var(--text-muted);margin-bottom:.35rem}
+.f-grid input,.f-grid select,.f-grid textarea{width:100%;background:var(--panel)}
+.photo-pick{display:flex;align-items:center;gap:.9rem}
+.photo-pick img{width:60px;height:80px;object-fit:contain;background:#fff;border-radius:var(--radius);border:1px solid var(--line);flex-shrink:0}
+.photo-pick input[type=file]{flex:1;font-size:.8rem}
+.toggle-row{display:flex;align-items:center;gap:.6rem;margin-top:.4rem}
+.form-actions{display:flex;justify-content:flex-end;gap:.7rem;margin-top:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line)}
+
+/* settings */
+.admin-nav{display:flex;gap:.4rem;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:.25rem}
+.admin-nav button{padding:.5rem 1.05rem;border-radius:99px;font-size:.84rem;font-weight:500;color:var(--text-muted)}
+.admin-nav button.active{background:var(--ink);color:#FFFFFF}
+.settings-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-lg);padding:1.4rem;margin-bottom:1.2rem;box-shadow:var(--shadow-card)}
+.settings-card h2{font-size:1.15rem;margin-bottom:.2rem}
+.settings-card .hint{color:var(--text-muted);font-size:.82rem;margin-bottom:1.1rem}
+.settings-row{display:flex;gap:.6rem;align-items:center;margin-bottom:.6rem}
+.settings-row input{flex:1;background:var(--panel)}
+.settings-row .price-label{flex:2}
+.settings-row .price-num{flex:1}
+.settings-row .icon-del{width:34px;height:34px;flex:0 0 auto;border:1px solid var(--border);border-radius:var(--radius);color:var(--text-muted);font-size:.95rem}
+.settings-row .icon-del:hover{border-color:var(--ink);color:var(--ink);background:var(--panel)}
+.settings-add{display:flex;gap:.6rem;margin-top:.9rem;padding-top:.9rem;border-top:1px dashed var(--line)}
+.settings-add input{flex:1;background:var(--panel)}
+
+/* share modal */
+.share-modal{max-width:420px;text-align:center}
+.share-modal .hint{color:var(--text-muted);font-size:.82rem;margin-top:.3rem}
+.share-link-row{display:flex;gap:.6rem;margin:1.1rem 0}
+.share-link-row input{flex:1;background:var(--panel);font-size:.82rem}
+.share-qr{display:flex;justify-content:center;margin-bottom:.3rem}
+.share-qr img{border:1px solid var(--line);border-radius:var(--radius)}
+
+/* ---------- Ranking ---------- */
+.rank-wrap{padding:1.6rem 1.5rem .4rem}
+.rank-title{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.9rem}
+.rank-title h2{font-size:1.25rem}
+.rank-title span{font-size:.74rem;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+.rank-list{list-style:none;border-top:1px solid var(--line-strong)}
+.rank-item{display:flex;align-items:center;gap:1.1rem;width:100%;text-align:left;padding:.95rem .2rem;border-bottom:1px solid var(--line)}
+.rank-item:hover .rank-name{text-decoration:underline;text-underline-offset:4px}
+.rank-pos{font-family:'Fraunces',serif;font-style:italic;font-size:2rem;line-height:1;width:2.2rem;color:var(--ink-faint);flex-shrink:0}
+.rank-name{font-family:'Fraunces',serif;font-size:1.05rem;flex:1}
+.rank-item.top{background:var(--ink);color:#fff;padding:1.15rem 1rem;border-radius:var(--radius-lg);margin:.7rem 0;border:none}
+.rank-item.top .rank-pos{color:#fff;font-size:2.6rem}
+.rank-item.top .rank-name{font-size:1.25rem}
+.rank-tag{font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(255,255,255,.5);padding:.2rem .5rem;border-radius:99px;white-space:nowrap}
+.rank-bar{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden;min-width:90px}
+.rank-bar i{display:block;height:100%;background:var(--ink);border-radius:99px}
+.sale-btn{border:1px solid var(--ink);padding:.2rem .55rem;border-radius:var(--radius);font-size:.74rem;margin-left:.4rem}
+.sale-btn:hover{background:var(--ink);color:#fff}
+.sale-btn.undo{border-color:var(--border);color:var(--text-muted)}
+
+/* ---------- Roleta ---------- */
+.rl-banner{margin:1.4rem 1.5rem 0;border:1px solid var(--line-strong);border-radius:var(--radius-lg);padding:1.15rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:var(--panel)}
+.rl-banner h3{font-size:1.1rem}
+.rl-banner p{font-size:.8rem;color:var(--text-muted);margin-top:.15rem}
+.rl-modal{padding:1.6rem 1.4rem 1.5rem;position:relative}
+.rl-modal h2{font-size:1.4rem;margin-bottom:.3rem}
+.rl-sub{font-size:.85rem;color:var(--text-muted);margin-bottom:1.2rem}
+.rl-opt{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:var(--radius-lg);padding:1rem 1.1rem;margin-bottom:.8rem;background:var(--paper)}
+.rl-opt:hover{border-color:var(--ink)}
+.rl-opt b{font-family:'Fraunces',serif;font-weight:500;font-size:1.05rem;display:block}
+.rl-opt span{font-size:.8rem;color:var(--text-muted)}
+.rl-list{max-height:42vh;overflow-y:auto;border-top:1px solid var(--line);margin-top:.8rem}
+.rl-row{display:flex;align-items:center;gap:.7rem;padding:.65rem .2rem;border-bottom:1px solid var(--line);cursor:pointer;font-size:.9rem}
+.rl-row input{width:18px;height:18px;padding:0;accent-color:#0B0B0B}
+.rl-foot{display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-top:1rem}
+.rl-count{font-size:.8rem;color:var(--text-muted)}
+.rl-stage{position:relative;width:min(300px,78vw);aspect-ratio:1;margin:.6rem auto 1.1rem}
+.rl-stage canvas{width:100%;height:100%;border-radius:50%;box-shadow:var(--shadow-lift);transition:transform 5s cubic-bezier(.12,.6,.1,1)}
+.rl-pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:20px solid var(--ink);z-index:2;filter:drop-shadow(0 2px 2px rgba(0,0,0,.3))}
+.rl-hub{position:absolute;top:50%;left:50%;width:46px;height:46px;transform:translate(-50%,-50%);border-radius:50%;background:var(--paper);border:3px solid var(--ink);z-index:1}
+.rl-result{text-align:center;min-height:5.2rem}
+.rl-result .lbl{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted)}
+.rl-result .win{font-family:'Fraunces',serif;font-size:1.5rem;margin:.25rem 0 .9rem;animation:rlpop .5s ease}
+@keyframes rlpop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+.rl-actions{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<div id="customer"></div>
+<div id="admin" class="hide"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getFirestore, doc, collection, setDoc, deleteDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+/* ---------------- banco de dados (Firebase) ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyA3YeXa0WIv3Oa9Pojtv8HtJj_jYYTd5_c",
+  authDomain: "adegadigital-369f7.firebaseapp.com",
+  projectId: "adegadigital-369f7",
+  storageBucket: "adegadigital-369f7.firebasestorage.app",
+  messagingSenderId: "941296252619",
+  appId: "1:941296252619:web:f2b0410e9e0f0ad50fcd4e"
+};
+const fbApp=initializeApp(firebaseConfig);
+const db=getFirestore(fbApp);
+const winesColl=collection(db,'wines');
+const legacyWinesRef=doc(db,'adega','wines');
+const settingsRef=doc(db,'adega','settings');
+let dbReady=false,winesLoaded=false,settingsLoaded=false,dbError=null,migrating=false;
+
+/* ---------------- data layer ---------------- */
+const ADMIN_PASS='adega2026';
+/* Identifica computador (mouse/trackpad) vs celular/tablet (toque). Não muda com o tamanho da janela. */
+const IS_DESKTOP=window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+
+const seed=[
+ {id:1,name:'Reserva Cabernet Sauvignon',image:'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=600',price:89,country:'Chile',region:'Vale de Colchagua',grape:'Cabernet Sauvignon',category:'Tinto',description:'Encorpado, com taninos macios e notas de frutas escuras e especiarias.',stock:7,active:true,colorCode:'Vermelho',abv:13.5,sweetness:'Seco'},
+ {id:2,name:'Malbec Alta Vista',image:'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600',price:112,country:'Argentina',region:'Mendoza',grape:'Malbec',category:'Tinto',description:'Aromas intensos de ameixa e violeta, final longo e aveludado.',stock:4,active:true,colorCode:'Azul',abv:13.8,sweetness:'Seco'},
+ {id:3,name:'Douro Branco Colheita',image:'https://images.unsplash.com/photo-1584916201218-f4242ceb4809?w=600',price:76,country:'Portugal',region:'Douro',grape:'Viosinho',category:'Branco',description:'Fresco e mineral, com acidez viva e notas cítricas.',stock:9,active:true,colorCode:'Dourado',abv:12.5,sweetness:'Seco'},
+ {id:4,name:'Chianti Classico',image:'https://images.unsplash.com/photo-1547595628-c61a29f496f0?w=600',price:134,country:'Itália',region:'Toscana',grape:'Sangiovese',category:'Tinto',description:'Elegante e estruturado, com notas de cereja e ervas secas.',stock:0,active:true,colorCode:'Preto',abv:13.5,sweetness:'Seco'},
+ {id:5,name:'Rosé de Provence',image:'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=600',price:98,country:'França',region:'Provence',grape:'Grenache',category:'Rosé',description:'Leve e seco, com notas de frutas vermelhas e flores brancas.',stock:6,active:true,colorCode:'Amarelo',abv:12,sweetness:'Meio Seco'},
+ {id:6,name:'Espumante Brut Nature',image:'https://images.unsplash.com/photo-1470158499416-75be9aa0c4db?w=600',price:145,country:'Brasil',region:'Serra Gaúcha',grape:'Chardonnay',category:'Espumante',description:'Borbulhas finas e persistentes, elegante e seco.',stock:5,active:true,colorCode:'Prata',abv:12.5,sweetness:'Seco'},
+ {id:7,name:'Pinot Noir Central Otago',image:'https://images.unsplash.com/photo-1596363505729-4190a9506133?w=600',price:168,country:'Nova Zelândia',region:'Central Otago',grape:'Pinot Noir',category:'Tinto',description:'Delicado e perfumado, com taninos sedosos e acidez equilibrada.',stock:3,active:true,colorCode:'Vermelho',abv:13,sweetness:'Seco'},
+ {id:8,name:'Chardonnay Reserva',image:'https://images.unsplash.com/photo-1568213816046-0a1d65c78f43?w=600',price:82,country:'Chile',region:'Casablanca',grape:'Chardonnay',category:'Branco',description:'Amanteigado e cremoso, com notas de baunilha e frutas tropicais.',stock:2,active:false,colorCode:'Amarelo',abv:13.2,sweetness:'Seco'},
+];
+
+let wines=structuredClone(seed);
+function saveWine(w){setDoc(doc(winesColl,String(w.id)),w).catch(e=>console.error('Erro ao salvar vinho no banco:',e));}
+function deleteWineDoc(id){return deleteDoc(doc(winesColl,String(id)));}
+function nextId(){return wines.length?Math.max(...wines.map(w=>w.id))+1:1;}
+function fmtPrice(p){return 'R$ '+Number(p).toFixed(2).replace('.',',');}
+
+const DEFAULT_MENU=[
+  {id:'pate',group:'entrada',name:'Patê de Truta',desc:'Patê de truta defumada, crispy de alho, funcho e caviar de mostarda, com cesta de pães e torradas da casa.'},
+  {id:'antepasto',group:'entrada',name:'Antepasto da Toca',desc:'Truta defumada, berinjela e pimentão amarelo, com pão de ervas.'},
+  {id:'conquilha',group:'entrada',name:'Conquilha de Truta',desc:'Truta desfiada temperada com cebola, tomate e especiarias, gratinada com molho bechamel.'},
+  {id:'abobora',group:'entrada',name:'Creme de Abóbora',desc:'Creme de abóbora com bacon e gorgonzola, croutons, semente de abóbora e cebolinha.'},
+  {id:'salada',group:'entrada',name:'Salada da Toca',desc:'Alface, rúcula, molho italiano, tomate seco, croutons e parmesão.'},
+  {id:'pico',group:'prato',name:'Truta Pico da Bandeira',desc:'Filé de truta ao molho tonnato (alcaparras e truta defumada), legumes salteados, arroz de lentilha com amêndoas e cebola crispy.'},
+  {id:'caparao',group:'prato',name:'Truta Caparaó',desc:'Filé de truta com molho de amêndoas, musseline de baroa (mandioquinha), farofa crocante e vinagrete.'},
+  {id:'risoto',group:'prato',name:'Risoto à Putanesca com Camarões',desc:'Risoto ao molho putanesca com camarões, pangrattato, pó de azeitona e creme fraîche.'},
+  {id:'arroz',group:'prato',name:'Arroz da Montanha',desc:'Arroz de truta defumada, bacon e ervilha, finalizado com coentro, limão e cebola crispy.'},
+  {id:'fit',group:'prato',name:'Truta Fit',desc:'Filé de truta ao molho de amêndoas com salada, tomate seco, croutons e parmesão.'},
+  {id:'fettuccine',group:'prato',name:'Fettuccine com Camarão',desc:'Massa italiana com camarão ao molho bechamel com pesto e farofa de bacon.'},
+];
+const DEFAULT_SETTINGS={
+  menu:DEFAULT_MENU,
+  categories:['Tinto','Branco','Rosé','Espumante'],
+  priceRanges:[
+    {label:'Até R$ 50',min:'',max:'50'},
+    {label:'R$ 50 – 100',min:'50',max:'100'},
+    {label:'R$ 100 – 200',min:'100',max:'200'},
+    {label:'Acima de R$ 200',min:'200',max:''},
+  ],
+};
+let settings=structuredClone(DEFAULT_SETTINGS);
+function saveSettings(){setDoc(settingsRef,settings).catch(e=>console.error('Erro ao salvar configurações no banco:',e));}
+
+/* Redimensiona e comprime a foto no próprio aparelho, sem precisar de upload — vira parte do vinho salvo direto no banco. */
+function drawStandardPhoto(img,maxDim,quality){
+  const H=maxDim, W=Math.round(maxDim*3/4), pad=Math.round(H*0.06);
+  const scale=Math.min((W-pad*2)/img.width,(H-pad*2)/img.height);
+  const w=Math.round(img.width*scale), h=Math.round(img.height*scale);
+  const canvas=document.createElement('canvas');
+  canvas.width=W;canvas.height=H;
+  const c=canvas.getContext('2d');
+  c.fillStyle='#fff';c.fillRect(0,0,W,H);
+  c.imageSmoothingQuality='high';
+  c.drawImage(img,Math.round((W-w)/2),Math.round((H-h)/2),w,h);
+  return canvas.toDataURL('image/jpeg',quality);
+}
+/* Padroniza uma foto que já está salva (data URL ou link) na tela 3:4 com fundo branco. */
+function standardizeSrc(src){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    if(!String(src).startsWith('data:'))img.crossOrigin='anonymous';
+    img.onerror=()=>reject(new Error('Não foi possível carregar a foto.'));
+    img.onload=()=>{
+      try{resolve({image:drawStandardPhoto(img,1000,0.85),thumb:drawStandardPhoto(img,560,0.75)});}
+      catch(e){reject(e);}
+    };
+    img.src=src;
+  });
+}
+function resizeImage(file,maxDim,quality){
+  /* maxDim = altura da tela padrão 3:4 (largura = 75%). A foto inteira é encaixada no centro, sobre fundo branco, sem cortar a garrafa. */
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('Não foi possível ler o arquivo.'));
+    reader.onload=e=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error('Arquivo não é uma imagem válida.'));
+      img.onload=()=>{
+        resolve(drawStandardPhoto(img,maxDim,quality));
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* Mantém o app sincronizado em tempo real: qualquer alteração feita em um aparelho aparece nos outros.
+   Sem migração automática — o Firestore às vezes entrega um instantâneo vazio do cache local antes do
+   dado real chegar, e migrar nesse momento sobrescreve vinhos reais com os padrões. */
+onSnapshot(winesColl,snap=>{
+  wines=snap.docs.map(d=>d.data());
+  winesLoaded=true;checkReady();route();
+},err=>{console.error('Erro ao carregar vinhos do banco:',err);dbError=err.code||err.message;route();});
+
+onSnapshot(settingsRef,snap=>{
+  if(snap.exists()){
+    const d=snap.data();
+    settings={
+      categories:Array.isArray(d.categories)&&d.categories.length?d.categories:structuredClone(DEFAULT_SETTINGS.categories),
+      priceRanges:Array.isArray(d.priceRanges)&&d.priceRanges.length?d.priceRanges:structuredClone(DEFAULT_SETTINGS.priceRanges),
+      menu:Array.isArray(d.menu)&&d.menu.length?d.menu:structuredClone(DEFAULT_SETTINGS.menu),
+    };
+  }else{settings=structuredClone(DEFAULT_SETTINGS);setDoc(settingsRef,settings).catch(e=>console.error('Erro ao criar configurações iniciais:',e));}
+  settingsLoaded=true;checkReady();route();
+},err=>{console.error('Erro ao carregar configurações do banco:',err);dbError=err.code||err.message;route();});
+
+function checkReady(){if(winesLoaded&&settingsLoaded)dbReady=true;}
+
+/* ---------------- routing ---------------- */
+function route(){
+  if(!location.hash){
+    /* Sem endereço definido ainda: computador entra direto nas configurações, celular/tablet no cardápio. */
+    history.replaceState(null,'',IS_DESKTOP?'#admin':'#catalogo');
+  }
+  const isAdmin=location.hash.startsWith('#admin');
+  document.getElementById('customer').classList.toggle('hide',isAdmin);
+  document.getElementById('admin').classList.toggle('hide',!isAdmin);
+  if(dbError){
+    document.getElementById(isAdmin?'admin':'customer').innerHTML=`<div style="padding:5rem 1.5rem;text-align:center;color:var(--text-muted);max-width:520px;margin:0 auto">
+      <p style="color:var(--ink);font-weight:600;margin-bottom:.6rem">Não foi possível conectar ao banco de dados.</p>
+      <p style="font-size:.85rem;margin-bottom:.6rem">Erro: ${dbError}</p>
+      <p style="font-size:.85rem">Verifique se as Regras do Firestore foram salvas e publicadas no console do Firebase.</p>
+    </div>`;
+    return;
+  }
+  if(!dbReady){
+    document.getElementById(isAdmin?'admin':'customer').innerHTML='<div style="padding:5rem 1.5rem;text-align:center;color:var(--text-muted)">Carregando…</div>';
+    return;
+  }
+  if(isAdmin){renderAdmin();}else{renderCustomer();}
+}
+window.addEventListener('hashchange',route);
+
+/* ================= CUSTOMER ================= */
+let custState={tab:'home',q:'',category:'',country:'',grape:'',min:'',max:'',filtersOpen:false};
+
+function availableWines(){return wines.filter(w=>w.active&&w.stock>0);}
+function uniq(arr){return [...new Set(arr)].filter(Boolean).sort();}
+
+function wineDishes(w){
+  const ids=Array.isArray(w.dishes)?w.dishes:[];
+  return (settings.menu||[]).filter(d=>ids.includes(d.id));
+}
+/* Sugestão inicial pelo estilo do vinho x pratos da casa (o admin pode ajustar em "editar"). */
+function suggestDishes(w){
+  const norm=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const c=norm(w.category), g=norm(w.grape);
+  const has=(...k)=>k.some(x=>g.includes(x));
+  let ids=[];
+  if(c.includes('espumante'))ids=['pate','antepasto','conquilha','salada','arroz','fettuccine'];
+  else if(c.includes('rose'))ids=['pate','antepasto','salada','abobora','pico','risoto','arroz','fit'];
+  else if(c.includes('branco')){
+    if(has('chardonnay','viognier','chenin','marsanne','roussanne'))ids=['conquilha','abobora','caparao','fettuccine','pico','risoto'];
+    else if(has('sauvignon','riesling','albarino','viosinho','grigio','verdejo','vinho verde','loureiro','arinto','gruner','trebbiano','fiano'))ids=['pate','antepasto','salada','arroz','fit','risoto','caparao'];
+    else ids=['pate','antepasto','conquilha','caparao','arroz','fettuccine','fit'];
+  }
+  else if(c.includes('tinto')){
+    if(has('pinot noir','gamay','sangiovese','grenache','garnacha','merlot','tempranillo'))ids=['abobora','pico','caparao','risoto'];
+    else ids=['abobora'];
+  }
+  const have=new Set((settings.menu||[]).map(d=>d.id));
+  return ids.filter(x=>have.has(x));
+}
+function filteredWines(){
+  const s=custState;
+  return availableWines().filter(w=>{
+    if(s.q){
+      const hay=(w.name+' '+w.grape+' '+w.country+' '+w.region+' '+w.category).toLowerCase();
+      if(!hay.includes(s.q.toLowerCase()))return false;
+    }
+    if(s.category&&w.category!==s.category)return false;
+    if(s.country&&w.country!==s.country)return false;
+    if(s.grape&&w.grape!==s.grape)return false;
+    if(s.min&&w.price<Number(s.min))return false;
+    if(s.max&&w.price>Number(s.max))return false;
+    return true;
+  });
+}
+
+function renderCustomer(){
+  const el=document.getElementById('customer');
+  const avail=availableWines();
+  const countries=uniq(avail.map(w=>w.country));
+  const grapes=uniq(avail.map(w=>w.grape));
+  const list=filteredWines();
+  const s=custState;
+  if(s.tab==='ranking'||s.tab==='roleta'){renderCustomerTab(el);return;}
+
+  el.innerHTML=`
+    <div class="cust-header">
+      <div class="brand-row">
+        <h1>Adega <span>Digital</span></h1>
+        <span class="count-tag">${avail.length} vinhos</span>
+      </div>
+      <div class="search-row">
+        <input id="searchInput" placeholder="Buscar por nome, uva, país..." value="${escAttr(s.q)}">
+        <button class="filter-toggle ${s.filtersOpen?'active':''}" id="toggleFilters">Filtros</button>
+      </div>
+      <div class="tab-row country-tabs">
+        <button class="tab-btn ${!s.country?'active':''}" data-country="">Todos os países</button>
+        ${countries.map(c=>`<button class="tab-btn ${s.country===c?'active':''}" data-country="${c}">${c}</button>`).join('')}
+      </div>
+    </div>
+    <div class="filters ${s.filtersOpen?'':'hide'}">
+      <div class="full"><label>Categoria</label>
+        <div class="pill-group">
+          <button class="tab-btn ${!s.category?'active':''}" data-cat="">Todas</button>
+          ${settings.categories.map(c=>`<button class="tab-btn ${s.category===c?'active':''}" data-cat="${c}">${c}</button>`).join('')}
+        </div>
+      </div>
+      <div class="full"><label>Uva</label>
+        <div class="pill-group">
+          <button class="tab-btn ${!s.grape?'active':''}" data-grape="">Todas</button>
+          ${grapes.map(c=>`<button class="tab-btn ${s.grape===c?'active':''}" data-grape="${c}">${c}</button>`).join('')}
+        </div>
+      </div>
+      <div class="full"><label>Faixa de preço</label>
+        <div class="pill-group">
+          <button class="tab-btn ${(!s.min&&!s.max)?'active':''}" data-price="">Todos os preços</button>
+          ${settings.priceRanges.map((r,i)=>`<button class="tab-btn ${(s.min===r.min&&s.max===r.max)?'active':''}" data-price="${i}">${r.label}</button>`).join('')}
+        </div>
+      </div>
+      <button class="clear-filters" id="clearFilters">Limpar filtros</button>
+    </div>
+    <div class="catalog">
+      ${list.length?list.map(cardHtml).join(''):''}
+    </div>
+    ${list.length?'':`<div class="empty-state"><h3>Nenhum vinho encontrado</h3><p>Tente ajustar a busca ou os filtros.</p></div>`}
+    <div class="cust-footer">
+      <a href="#admin">Área administrativa</a>
+    </div>
+    ${custNavHtml()}
+  `;
+
+  document.getElementById('searchInput').oninput=e=>{custState.q=e.target.value;renderCustomerListOnly();};
+  document.getElementById('toggleFilters').onclick=()=>{custState.filtersOpen=!custState.filtersOpen;renderCustomer();};
+  document.getElementById('clearFilters').onclick=()=>{custState={...custState,category:'',grape:'',min:'',max:''};renderCustomer();};
+  el.querySelectorAll('[data-country]').forEach(b=>b.onclick=()=>{custState.country=b.dataset.country;renderCustomer();});
+  el.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{custState.category=b.dataset.cat;renderCustomer();});
+  el.querySelectorAll('[data-grape]').forEach(b=>b.onclick=()=>{custState.grape=b.dataset.grape;renderCustomer();});
+  el.querySelectorAll('[data-price]').forEach(b=>b.onclick=()=>{
+    const idx=b.dataset.price;
+    if(idx===''){custState.min='';custState.max='';}
+    else{const r=settings.priceRanges[Number(idx)];custState.min=r.min;custState.max=r.max;}
+    renderCustomer();
+  });
+  bindCustNav(el);
+  bindWineCards(el);
+}
+
+function custNavHtml(){
+  const t=custState.tab||'home';
+  const item=(k,label,svg)=>`<button class="nav-item${t===k?' active':''}" data-ctab="${k}" aria-label="${label}"><svg viewBox="0 0 24 24" aria-hidden="true">${svg}</svg><span>${label}</span></button>`;
+  return `<nav class="cust-nav" aria-label="Navegação">
+    ${item('home','Início','<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>')}
+    ${item('ranking','Ranking','<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>')}
+    ${item('roleta','Roleta','<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 3v7M12 14v7M3 12h7M14 12h7"/>')}
+  </nav>`;
+}
+function bindCustNav(el){
+  el.querySelectorAll('[data-ctab]').forEach(b=>b.onclick=()=>{
+    const t=b.dataset.ctab;
+    if((custState.tab||'home')===t)return;
+    custState.tab=t; renderCustomer(); window.scrollTo(0,0);
+  });
+}
+function renderCustomerTab(el){
+  const t=custState.tab;
+  el.innerHTML=`<div class="cust-header"><div class="brand-row" style="margin-bottom:0">
+      <h1>Adega <span>Digital</span></h1><span class="count-tag">${t==='ranking'?'Ranking':'Roleta'}</span>
+    </div></div>
+    <div id="tabBody"></div>
+    ${custNavHtml()}`;
+  const body=el.querySelector('#tabBody');
+  if(t==='ranking'){
+    body.innerHTML=rankingPageHtml();
+    body.querySelectorAll('[data-rank]').forEach(b=>b.onclick=()=>openWineModal(Number(b.dataset.rank)));
+  }else{
+    openRoulette(body);
+  }
+  bindCustNav(el);
+}
+
+function renderCustomerListOnly(){
+  const list=filteredWines();
+  const catalog=document.querySelector('.catalog');
+  const empty=document.querySelector('.empty-state');
+  if(catalog)catalog.innerHTML=list.map(cardHtml).join('');
+  if(empty)empty.remove();
+  if(!list.length&&catalog){
+    catalog.insertAdjacentHTML('afterend','<div class="empty-state"><h3>Nenhum vinho encontrado</h3><p>Tente ajustar a busca ou os filtros.</p></div>');
+  }
+  bindWineCards(document);
+}
+
+let revealObs=null;
+function observeCards(scope){
+  const cards=scope.querySelectorAll('.wine-card:not(.in)');
+  if(!('IntersectionObserver' in window)){cards.forEach(c=>c.classList.add('in'));return;}
+  if(!revealObs){
+    revealObs=new IntersectionObserver(es=>{
+      es.forEach(e=>{
+        if(e.isIntersecting){
+          const c=e.target;
+          c.style.transitionDelay=(Number(c.dataset.ri||0)*70)+'ms';
+          c.classList.add('in');
+          revealObs.unobserve(c);
+        }
+      });
+    },{threshold:.08,rootMargin:'0px 0px -6% 0px'});
+  }
+  cards.forEach((c,i)=>{c.classList.add('reveal');c.dataset.ri=i%3;revealObs.observe(c);});
+}
+function bindWineCards(scope){
+  observeCards(scope);
+  scope.querySelectorAll('.wine-card').forEach(c=>{
+    c.onclick=()=>openWineModal(Number(c.dataset.id));
+    c.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openWineModal(Number(c.dataset.id));}};
+  });
+}
+
+function cardHtml(w){
+  return `<div class="wine-card" role="button" tabindex="0" data-id="${w.id}">
+    <div class="thumb"><img src="${escAttr(w.thumb||w.image)}" alt="${escAttr(w.name)}" loading="lazy"></div>
+    <div class="info">
+      <span class="cat-pill">${w.category}</span>
+      <h3>${w.name}</h3>
+      <div class="origin">${w.country} · ${w.grape}</div>
+      <div class="price">${fmtPrice(w.price)}</div>
+    </div>
+  </div>`;
+}
+
+function sealColor(code){
+  return {Vermelho:'#B3352E',Azul:'#2E5FB3',Dourado:'#C9A227',Preto:'#1A1A1A',Amarelo:'#E8C547',Prata:'#B8BEC4'}[code]||'#999';
+}
+
+function openWineModal(id){
+  const w=wines.find(x=>x.id===id); if(!w)return;
+  const seal=w.colorCode?`<div class="seal-tag"><span class="seal-dot" style="background:${sealColor(w.colorCode)}"></span> Selo ${w.colorCode} — mostre ao garçom</div>`:'';
+  const back=document.createElement('div');
+  back.className='modal-back';
+  back.innerHTML=`<div class="modal">
+    <button class="close-btn" id="closeModal">✕</button>
+    <div class="hero"><img src="${escAttr(w.image)}" alt="${escAttr(w.name)}"></div>
+    <div class="modal-body">
+      <span class="cat-pill">${w.category}</span>
+      <h2>${w.name}</h2>
+      <div class="origin">${w.country} — ${w.region}</div>
+      <div class="modal-price">${fmtPrice(w.price)}</div>
+      <dl class="spec-grid">
+        <div><dt>Uva</dt><dd>${w.grape}</dd></div>
+        <div><dt>Categoria</dt><dd>${w.category}</dd></div>
+        ${w.abv?`<div><dt>Teor alcoólico</dt><dd>${w.abv}%</dd></div>`:''}
+        ${w.sweetness?`<div><dt>Tipo</dt><dd>${w.sweetness}</dd></div>`:''}
+      </dl>
+      <p class="modal-desc">${w.description||''}</p>
+      ${wineDishes(w).length?`<button class="pair-btn" id="pairBtn" aria-expanded="false"><span>Com o que combina?</span><span class="chev">▾</span></button><div class="pair-text" id="pairText" hidden>
+        ${[['entrada','Entradas'],['prato','Pratos principais']].map(([g,t])=>{const l=wineDishes(w).filter(d=>d.group===g);return l.length?`<h4>${t}</h4>${l.map(d=>`<div class="dish"><b>${esc(d.name)}</b>${d.desc?`<span>${esc(d.desc)}</span>`:''}</div>`).join('')}`:'';}).join('')}
+      </div>`:''}
+      <div class="avail"><span class="dot"></span> Disponível na adega</div>
+      ${seal}
+    </div>
+  </div>`;
+  document.body.appendChild(back);
+  back.onclick=e=>{if(e.target===back||e.target.id==='closeModal'){back.remove();}};
+  const pb=back.querySelector('#pairBtn');
+  if(pb)pb.onclick=()=>{
+    const t=back.querySelector('#pairText'), open=t.hidden;
+    t.hidden=!open; pb.setAttribute('aria-expanded',String(open));
+  };
+}
+
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escAttr(s){return String(s??'').replace(/"/g,'&quot;');}
+
+/* ================= ADMIN ================= */
+let adminAuthed=sessionStorage.getItem('adega_admin')==='1';
+let adminSearch='';
+let adminView='dashboard';
+
+function renderAdmin(){
+  const el=document.getElementById('admin');
+  if(!adminAuthed){
+    el.innerHTML=`<div class="login-box">
+      <h2 class="serif">Área administrativa</h2>
+      <p>Acesso restrito à equipe da adega.</p>
+      <input id="passInput" type="password" placeholder="Senha">
+      <div class="err" id="loginErr"></div>
+      <button class="btn" id="loginBtn" style="width:100%">Entrar</button>
+      <div style="margin-top:1rem"><a href="#catalogo" class="btn-ghost">Voltar ao catálogo</a></div>
+    </div>`;
+    document.getElementById('loginBtn').onclick=tryLogin;
+    document.getElementById('passInput').onkeydown=e=>{if(e.key==='Enter')tryLogin();};
+    return;
+  }
+  const total=wines.length;
+  const active=wines.filter(w=>w.active&&w.stock>0).length;
+  const inactive=wines.filter(w=>!w.active).length;
+  const zero=wines.filter(w=>w.stock===0).length;
+  const list=wines.filter(w=>w.name.toLowerCase().includes(adminSearch.toLowerCase()));
+
+  if(adminView==='settings'){
+    renderAdminSettings(el);
+    return;
+  }
+  if(adminView==='report'){
+    renderAdminReport(el);
+    return;
+  }
+
+  el.innerHTML=`
+    <div class="admin-head">
+      <h1 class="serif" style="font-size:1.6rem">Painel da Adega</h1>
+      <div style="display:flex;gap:.7rem;align-items:center;flex-wrap:wrap">
+        <div class="admin-nav">
+          <button class="active" id="navDashboard">Painel</button>
+          <button id="navReport">Relatório</button>
+          <button id="navSettings">Configurações</button>
+        </div>
+        <a href="#catalogo" class="btn-ghost">Ver catálogo</a>
+        ${IS_DESKTOP?'<button class="btn-outline" id="shareBtn">Divulgar link</button>':''}
+        <button class="btn-outline" id="bulkImportBtn">Importar em lote</button>
+        <button class="btn-outline" id="backupBtn">Baixar backup</button>
+        <button class="btn-outline" id="logoutBtn">Sair</button>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="n">${total}</div><div class="l">Total de vinhos</div></div>
+      <div class="stat"><div class="n">${active}</div><div class="l">Disponíveis</div></div>
+      <div class="stat"><div class="n">${inactive}</div><div class="l">Desativados</div></div>
+      <div class="stat"><div class="n">${zero}</div><div class="l">Sem estoque</div></div>
+    </div>
+    ${adminRankingHtml(5)}
+    <div class="admin-toolbar">
+      <input id="adminSearch" placeholder="Buscar vinho..." value="${escAttr(adminSearch)}">
+      <button class="btn" id="newWineBtn">+ Novo vinho</button>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Vinho</th><th>Preço</th><th>Origem</th><th>Estoque</th><th>Vendidos</th><th>Status</th><th>Código interno</th><th></th></tr></thead>
+      <tbody>${list.map(adminRowHtml).join('')}</tbody>
+    </table></div>
+  `;
+  document.getElementById('logoutBtn').onclick=()=>{sessionStorage.removeItem('adega_admin');adminAuthed=false;renderAdmin();};
+  if(document.getElementById('shareBtn'))document.getElementById('shareBtn').onclick=openShareModal;
+  document.getElementById('bulkImportBtn').onclick=openBulkImportModal;
+  document.getElementById('backupBtn').onclick=downloadBackup;
+  document.getElementById('newWineBtn').onclick=()=>openWineForm(null);
+  document.getElementById('adminSearch').oninput=e=>{adminSearch=e.target.value;renderAdmin();};
+  document.getElementById('navDashboard').onclick=()=>{adminView='dashboard';renderAdmin();};
+  document.getElementById('navSettings').onclick=()=>{adminView='settings';renderAdmin();};
+  document.getElementById('navReport').onclick=()=>{adminView='report';renderAdmin();};
+  el.querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>registerSale(Number(b.dataset.sell),1));
+  el.querySelectorAll('[data-unsell]').forEach(b=>b.onclick=()=>registerSale(Number(b.dataset.unsell),-1));
+  el.querySelectorAll('[data-inc]').forEach(b=>b.onclick=()=>changeStock(Number(b.dataset.inc),1));
+  el.querySelectorAll('[data-dec]').forEach(b=>b.onclick=()=>changeStock(Number(b.dataset.dec),-1));
+  el.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openWineForm(Number(b.dataset.edit)));
+  el.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>toggleActive(Number(b.dataset.toggle)));
+  el.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>deleteWine(Number(b.dataset.del)));
+}
+
+function renderAdminReport(el){
+  const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const total=wines.length;
+  const avail=wines.filter(w=>w.active&&w.stock>0);
+  const inactive=wines.filter(w=>!w.active);
+  const zero=wines.filter(w=>w.stock<=0);
+  const low=wines.filter(w=>w.stock>0&&w.stock<=2);
+  const units=wines.reduce((a,w)=>a+(Number(w.stock)||0),0);
+  const value=wines.reduce((a,w)=>a+(Number(w.stock)||0)*(Number(w.price)||0),0);
+  const avg=total?wines.reduce((a,w)=>a+(Number(w.price)||0),0)/total:0;
+  const group=key=>{
+    const m={};
+    wines.forEach(w=>{
+      const k=w[key]||'Não informado';
+      m[k]=m[k]||{n:0,u:0,v:0};
+      m[k].n++; m[k].u+=Number(w.stock)||0; m[k].v+=(Number(w.stock)||0)*(Number(w.price)||0);
+    });
+    return Object.entries(m).sort((a,b)=>b[1].n-a[1].n);
+  };
+  const tbl=(title,rows)=>`
+    <div class="settings-card">
+      <h2 class="serif">${title}</h2>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>${title.replace('Por ','')}</th><th>Vinhos</th><th>Unidades</th><th>Valor em estoque</th></tr></thead>
+        <tbody>${rows.map(([k,d])=>`<tr><td>${esc(k)}</td><td>${d.n}</td><td>${d.u}</td><td>${fmtPrice(d.v)}</td></tr>`).join('')||'<tr><td colspan="4">Sem dados</td></tr>'}</tbody>
+      </table></div>
+    </div>`;
+  const listTbl=(title,arr,hint)=>`
+    <div class="settings-card">
+      <h2 class="serif">${title} (${arr.length})</h2>
+      <p class="hint">${hint}</p>
+      ${arr.length?`<div class="tbl-wrap"><table>
+        <thead><tr><th>Vinho</th><th>Origem</th><th>Preço</th><th>Estoque</th></tr></thead>
+        <tbody>${arr.map(w=>`<tr><td>${esc(w.name)}</td><td>${esc([w.country,w.region].filter(Boolean).join(' · '))}</td><td>${fmtPrice(w.price)}</td><td>${w.stock}</td></tr>`).join('')}</tbody>
+      </table></div>`:'<p class="hint">Nenhum.</p>'}
+    </div>`;
+  const now=new Date().toLocaleString('pt-BR');
+  el.innerHTML=`
+    <style>@media print{.no-print{display:none!important}body{padding:0}}</style>
+    <div class="admin-head">
+      <h1 class="serif" style="font-size:1.6rem">Relatório da Adega</h1>
+      <div class="no-print" style="display:flex;gap:.7rem;align-items:center;flex-wrap:wrap">
+        <div class="admin-nav">
+          <button id="navDashboard">Painel</button>
+          <button class="active" id="navReport">Relatório</button>
+          <button id="navSettings">Configurações</button>
+        </div>
+        <a href="#catalogo" class="btn-ghost">Ver catálogo</a>
+        <button class="btn-outline" id="csvBtn">Baixar CSV</button>
+        <button class="btn" id="printBtn">Imprimir / PDF</button>
+        <button class="btn-outline" id="logoutBtn">Sair</button>
+      </div>
+    </div>
+    <p class="hint" style="margin:0 0 1rem">Gerado em ${now}</p>
+    <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1.2rem">
+      <div class="stat"><div class="n">${total}</div><div class="l">Total de vinhos</div></div>
+      <div class="stat"><div class="n">${avail.length}</div><div class="l">Disponíveis</div></div>
+      <div class="stat"><div class="n">${zero.length}</div><div class="l">Sem estoque</div></div>
+      <div class="stat"><div class="n">${inactive.length}</div><div class="l">Desativados</div></div>
+      <div class="stat"><div class="n">${units}</div><div class="l">Unidades em estoque</div></div>
+      <div class="stat"><div class="n">${fmtPrice(value)}</div><div class="l">Valor do estoque</div></div>
+      <div class="stat"><div class="n">${fmtPrice(avg)}</div><div class="l">Preço médio</div></div>
+    </div>
+    ${(()=>{
+      const r=rankedWines(); const tot=r.reduce((a,w)=>a+soldOf(w),0); const rev=r.reduce((a,w)=>a+soldOf(w)*(Number(w.price)||0),0); const max=r.length?soldOf(r[0]):1;
+      return `<div class="settings-card"><h2 class="serif">Ranking de vendas</h2>
+        <p class="hint">${tot} garrafa${tot===1?'':'s'} vendida${tot===1?'':'s'} · faturamento de ${fmtPrice(rev)}. Cada saída (−) no estoque do Painel conta como venda.</p>
+        ${r.length?`<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Vinho</th><th>Vendidas</th><th></th><th>% do total</th><th>Faturamento</th><th>Estoque</th></tr></thead><tbody>
+        ${r.map((w,i)=>`<tr><td><b class="serif">${i+1}º</b></td><td>${esc(w.name)}</td><td>${soldOf(w)}</td><td><div class="rank-bar"><i style="width:${Math.round(soldOf(w)/max*100)}%"></i></div></td><td>${(soldOf(w)/tot*100).toFixed(0)}%</td><td>${fmtPrice(soldOf(w)*(Number(w.price)||0))}</td><td>${w.stock}</td></tr>`).join('')}
+        </tbody></table></div>`:'<p class="hint">Ainda sem vendas registradas.</p>'}
+      </div>`;
+    })()}
+    ${tbl('Por País',group('country'))}
+    ${tbl('Por Categoria',group('category'))}
+    ${listTbl('Estoque baixo',low,'Vinhos com 1 ou 2 unidades.')}
+    ${listTbl('Sem estoque',zero,'Vinhos zerados, não aparecem no catálogo.')}
+    ${listTbl('Desativados',inactive,'Ocultos do catálogo pelo painel.')}
+  `;
+  document.getElementById('logoutBtn').onclick=()=>{sessionStorage.removeItem('adega_admin');adminAuthed=false;renderAdmin();};
+  document.getElementById('navDashboard').onclick=()=>{adminView='dashboard';renderAdmin();};
+  document.getElementById('navSettings').onclick=()=>{adminView='settings';renderAdmin();};
+  document.getElementById('printBtn').onclick=()=>window.print();
+  document.getElementById('csvBtn').onclick=()=>{
+    const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+    const head=['Nome','País','Região','Uva','Categoria','Preço','Estoque','Vendidos','Status'];
+    const rows=wines.map(w=>[w.name,w.country,w.region,w.grape,w.category,Number(w.price||0).toFixed(2).replace('.',','),w.stock,soldOf(w),w.active?(w.stock>0?'Disponível':'Sem estoque'):'Desativado']);
+    const csv='\ufeff'+[head,...rows].map(r=>r.map(q).join(';')).join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    a.download='relatorio-adega-'+new Date().toISOString().slice(0,10)+'.csv';
+    a.click();
+  };
+}
+
+function renderAdminSettings(el){
+  el.innerHTML=`
+    <div class="admin-head">
+      <h1 class="serif" style="font-size:1.6rem">Configurações</h1>
+      <div style="display:flex;gap:.7rem;align-items:center;flex-wrap:wrap">
+        <div class="admin-nav">
+          <button id="navDashboard">Painel</button>
+          <button id="navReport">Relatório</button>
+          <button class="active" id="navSettings">Configurações</button>
+        </div>
+        <a href="#catalogo" class="btn-ghost">Ver catálogo</a>
+        <button class="btn-outline" id="logoutBtn">Sair</button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h2 class="serif">Categorias</h2>
+      <p class="hint">Aparecem como botões no filtro do catálogo e no cadastro de vinhos.</p>
+      ${settings.categories.map((c,i)=>`
+        <div class="settings-row">
+          <input data-cat-i="${i}" value="${escAttr(c)}">
+          <button class="icon-del" data-cat-del="${i}" title="Excluir">✕</button>
+        </div>`).join('')}
+      <div class="settings-add">
+        <input id="newCatInput" placeholder="Nova categoria, ex.: Fortificado">
+        <button class="btn-outline" id="addCatBtn">+ Adicionar</button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h2 class="serif">Cardápio para harmonização</h2>
+      <p class="hint">Entradas e pratos principais do restaurante. No cadastro de cada vinho você marca com quais pratos ele combina, e o cliente vê isso no botão "Com o que combina?".</p>
+      ${settings.menu.map((d,i)=>`
+        <div class="settings-row" style="flex-wrap:wrap">
+          <select data-dish-group="${i}" style="max-width:130px"><option value="entrada" ${d.group==='entrada'?'selected':''}>Entrada</option><option value="prato" ${d.group==='prato'?'selected':''}>Prato principal</option></select>
+          <input data-dish-name="${i}" value="${escAttr(d.name)}" placeholder="Nome do prato">
+          <button class="icon-del" data-dish-del="${i}" title="Excluir">✕</button>
+          <input data-dish-desc="${i}" value="${escAttr(d.desc||'')}" placeholder="Descrição curta (aparece para o cliente)" style="flex-basis:100%">
+        </div>`).join('')}
+      <div class="settings-add">
+        <select id="newDishGroup" style="max-width:130px"><option value="entrada">Entrada</option><option value="prato">Prato principal</option></select>
+        <input id="newDishName" placeholder="Novo prato">
+        <button class="btn-outline" id="addDishBtn">+ Adicionar</button>
+      </div>
+      <button class="btn-outline" id="suggestAllBtn" style="margin-top:1rem">Sugerir pratos para vinhos que ainda não têm nenhum</button>
+      <p class="hint" id="suggestAllMsg" style="margin:.7rem 0 0"></p>
+    </div>
+
+    <div class="settings-card">
+      <h2 class="serif">Padronizar fotos</h2>
+      <p class="hint">Reenquadra todas as fotos já cadastradas no mesmo tamanho (vertical 3:4, fundo branco, garrafa inteira e centralizada). Fotos já padronizadas são puladas.</p>
+      <button class="btn" id="stdPhotosBtn">Padronizar fotos existentes</button>
+      <p class="hint" id="stdPhotosMsg" style="margin:.8rem 0 0"></p>
+    </div>
+
+    <div class="settings-card">
+      <h2 class="serif">Faixas de preço</h2>
+      <p class="hint">Os botões pré-definidos de preço que aparecem no filtro do catálogo.</p>
+      ${settings.priceRanges.map((r,i)=>`
+        <div class="settings-row">
+          <input class="price-label" data-range-label="${i}" value="${escAttr(r.label)}" placeholder="Rótulo">
+          <input class="price-num" type="number" data-range-min="${i}" value="${r.min}" placeholder="Mín">
+          <input class="price-num" type="number" data-range-max="${i}" value="${r.max}" placeholder="Máx">
+          <button class="icon-del" data-range-del="${i}" title="Excluir">✕</button>
+        </div>`).join('')}
+      <div class="settings-add">
+        <input id="newRangeLabel" placeholder="Rótulo, ex.: 200 – 300">
+        <input id="newRangeMin" type="number" placeholder="Mín" style="max-width:90px">
+        <input id="newRangeMax" type="number" placeholder="Máx" style="max-width:90px">
+        <button class="btn-outline" id="addRangeBtn">+ Adicionar</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('logoutBtn').onclick=()=>{sessionStorage.removeItem('adega_admin');adminAuthed=false;renderAdmin();};
+  document.getElementById('navDashboard').onclick=()=>{adminView='dashboard';renderAdmin();};
+  document.getElementById('navSettings').onclick=()=>{adminView='settings';renderAdmin();};
+  document.getElementById('navReport').onclick=()=>{adminView='report';renderAdmin();};
+
+  el.querySelectorAll('[data-cat-i]').forEach(inp=>inp.onchange=e=>{
+    settings.categories[Number(e.target.dataset.catI)]=e.target.value.trim();
+    saveSettings(); renderAdmin();
+  });
+  el.querySelectorAll('[data-cat-del]').forEach(b=>b.onclick=()=>{
+    settings.categories.splice(Number(b.dataset.catDel),1);
+    saveSettings(); renderAdmin();
+  });
+  el.querySelectorAll('[data-dish-name]').forEach(inp=>inp.onchange=e=>{
+    const v=e.target.value.trim(); if(!v){renderAdmin();return;}
+    settings.menu[Number(e.target.dataset.dishName)].name=v; saveSettings(); renderAdmin();
+  });
+  el.querySelectorAll('[data-dish-desc]').forEach(inp=>inp.onchange=e=>{
+    settings.menu[Number(e.target.dataset.dishDesc)].desc=e.target.value.trim(); saveSettings();
+  });
+  el.querySelectorAll('[data-dish-group]').forEach(sel=>sel.onchange=e=>{
+    settings.menu[Number(e.target.dataset.dishGroup)].group=e.target.value; saveSettings(); renderAdmin();
+  });
+  el.querySelectorAll('[data-dish-del]').forEach(b=>b.onclick=()=>{
+    settings.menu.splice(Number(b.dataset.dishDel),1); saveSettings(); renderAdmin();
+  });
+  document.getElementById('addDishBtn').onclick=()=>{
+    const v=document.getElementById('newDishName').value.trim(); if(!v)return;
+    settings.menu.push({id:'d'+Date.now().toString(36),group:document.getElementById('newDishGroup').value,name:v,desc:''});
+    saveSettings(); renderAdmin();
+  };
+  document.getElementById('suggestAllBtn').onclick=()=>{
+    let n=0;
+    wines.forEach(w=>{
+      if(wineDishes(w).length)return;
+      const sug=suggestDishes(w);
+      if(sug.length){w.dishes=sug;saveWine(w);n++;}
+    });
+    document.getElementById('suggestAllMsg').textContent=n?`Pratos sugeridos para ${n} vinho${n===1?'':'s'}. Ajuste cada um em "editar" se quiser.`:'Nenhum vinho para sugerir: todos já têm pratos ou não há combinação indicada.';
+  };
+  document.getElementById('addCatBtn').onclick=()=>{
+    const v=document.getElementById('newCatInput').value.trim();
+    if(!v)return;
+    settings.categories.push(v);
+    saveSettings(); renderAdmin();
+  };
+
+  el.querySelectorAll('[data-range-label]').forEach(inp=>inp.onchange=e=>{
+    settings.priceRanges[Number(e.target.dataset.rangeLabel)].label=e.target.value.trim();
+    saveSettings(); renderAdmin();
+  });
+  el.querySelectorAll('[data-range-min]').forEach(inp=>inp.onchange=e=>{
+    settings.priceRanges[Number(e.target.dataset.rangeMin)].min=e.target.value;
+    saveSettings(); renderAdmin();
+  });
+  el.querySelectorAll('[data-range-max]').forEach(inp=>inp.onchange=e=>{
+    settings.priceRanges[Number(e.target.dataset.rangeMax)].max=e.target.value;
+    saveSettings(); renderAdmin();
+  });
+  el.querySelectorAll('[data-range-del]').forEach(b=>b.onclick=()=>{
+    settings.priceRanges.splice(Number(b.dataset.rangeDel),1);
+    saveSettings(); renderAdmin();
+  });
+  document.getElementById('stdPhotosBtn').onclick=async()=>{
+    const btn=document.getElementById('stdPhotosBtn'), msg=document.getElementById('stdPhotosMsg');
+    const todo=wines.filter(w=>(w.image||w.thumb)&&!w.photoStd);
+    if(!todo.length){msg.textContent='Todas as fotos já estão padronizadas.';return;}
+    btn.disabled=true;
+    let ok=0;const fail=[];
+    for(let i=0;i<todo.length;i++){
+      const w=todo[i];
+      msg.textContent=`Padronizando ${i+1} de ${todo.length}…`;
+      try{
+        const r=await standardizeSrc(w.image||w.thumb);
+        w.image=r.image;w.thumb=r.thumb;w.photoStd=true;
+        saveWine(w);ok++;
+      }catch(e){console.error('Falha ao padronizar',w.name,e);fail.push(w.name);}
+    }
+    btn.disabled=false;
+    msg.textContent=`${ok} foto${ok===1?'':'s'} padronizada${ok===1?'':'s'}.`+(fail.length?` Não foi possível processar: ${fail.join(', ')}. Reenvie essas fotos pelo "editar".`:'');
+  };
+  document.getElementById('addRangeBtn').onclick=()=>{
+    const label=document.getElementById('newRangeLabel').value.trim();
+    const min=document.getElementById('newRangeMin').value;
+    const max=document.getElementById('newRangeMax').value;
+    if(!label)return;
+    settings.priceRanges.push({label,min,max});
+    saveSettings(); renderAdmin();
+  };
+}
+
+function tryLogin(){
+  const val=document.getElementById('passInput').value;
+  if(val===ADMIN_PASS){sessionStorage.setItem('adega_admin','1');adminAuthed=true;renderAdmin();}
+  else{document.getElementById('loginErr').textContent='Senha incorreta.';}
+}
+
+function adminRowHtml(w){
+  return `<tr>
+    <td><div class="row-name"><img class="row-thumb" src="${escAttr(w.thumb||w.image)}" alt=""><span>${w.name}</span></div></td>
+    <td>${fmtPrice(w.price)}</td>
+    <td>${w.country}</td>
+    <td><div class="stock-ctrl"><button data-dec="${w.id}" title="Saiu 1 garrafa (conta como venda no ranking)">−</button><span>${w.stock}</span><button data-inc="${w.id}" title="Repor estoque (não conta como venda)">+</button></div></td>
+    <td><span>${soldOf(w)}</span>${soldOf(w)>0?`<button class="sale-btn undo" data-unsell="${w.id}" title="Desfazer última saída (devolve 1 ao estoque)">↶</button>`:''}</td>
+    <td><button class="badge ${w.active&&w.stock>0?'on':'off'}" data-toggle="${w.id}">${w.active?(w.stock>0?'Disponível':'Sem estoque'):'Desativado'}</button></td>
+    <td>${w.colorCode||'—'}</td>
+    <td><div class="row-actions"><button data-edit="${w.id}">editar</button><button data-del="${w.id}">excluir</button></div></td>
+  </tr>`;
+}
+
+
+function openRoulette(host){
+  const box=document.createElement('div');
+  let back=null;
+  if(host){
+    box.className='rl-modal rl-inline';
+    host.appendChild(box);
+  }else{
+    back=document.createElement('div');
+    back.className='modal-back';
+    box.className='modal rl-modal';
+    back.appendChild(box);
+    document.body.appendChild(back);
+    back.onclick=e=>{if(e.target===back)close();};
+  }
+  const close=()=>{if(back)back.remove();};
+  const pool=availableWines();
+  const sel=new Set();
+  let q='';
+  const MAX=12;
+  let rot=0, spinning=false;
+
+  function stepStart(){
+    box.innerHTML=`<button class="close-btn" id="rlClose">✕</button>
+      <h2 class="serif">Roleta de vinhos</h2>
+      <p class="rl-sub">Em dúvida? Deixe a sorte decidir.</p>
+      <button class="rl-opt" id="rlPick"><b>Escolher meus vinhos</b><span>Marque os que você está em dúvida. O que a roleta parar, é o seu.</span></button>
+      <button class="rl-opt" id="rlAll" ${pool.length<2?'disabled':''}><b>Qualquer um, surpreenda-me</b><span>Roleta com todos os ${pool.length} vinhos da adega.</span></button>`;
+    box.querySelector('#rlClose').onclick=close;
+    box.querySelector('#rlPick').onclick=stepPick;
+    box.querySelector('#rlAll').onclick=()=>stepWheel(pool,'start');
+  }
+
+  function stepPick(){
+    box.innerHTML=`<button class="close-btn" id="rlClose">✕</button>
+      <h2 class="serif">Quais vinhos estão em dúvida?</h2>
+      <p class="rl-sub">Escolha de 2 a ${MAX} vinhos.</p>
+      <input id="rlSearch" placeholder="Buscar vinho..." style="width:100%" value="${escAttr(q)}">
+      <div class="rl-list" id="rlList"></div>
+      <div class="rl-foot"><button class="btn-ghost" id="rlBack">Voltar</button><span class="rl-count" id="rlCount"></span><button class="btn" id="rlGo">Montar roleta</button></div>`;
+    const draw=()=>{
+      const l=pool.filter(w=>w.name.toLowerCase().includes(q.toLowerCase()));
+      box.querySelector('#rlList').innerHTML=l.map(w=>`<label class="rl-row"><input type="checkbox" data-w="${w.id}" ${sel.has(w.id)?'checked':''}><span>${w.name}</span></label>`).join('')||'<p class="rl-sub" style="padding:1rem 0">Nenhum vinho encontrado.</p>';
+      box.querySelectorAll('[data-w]').forEach(c=>c.onchange=()=>{
+        const id=Number(c.dataset.w);
+        if(c.checked){ if(sel.size>=MAX){c.checked=false;return;} sel.add(id);} else sel.delete(id);
+        upd();
+      });
+      upd();
+    };
+    const upd=()=>{
+      box.querySelector('#rlCount').textContent=sel.size+' selecionado'+(sel.size===1?'':'s');
+      box.querySelector('#rlGo').disabled=sel.size<2;
+      box.querySelector('#rlGo').style.opacity=sel.size<2?.4:1;
+    };
+    box.querySelector('#rlClose').onclick=close;
+    box.querySelector('#rlBack').onclick=stepStart;
+    box.querySelector('#rlSearch').oninput=e=>{q=e.target.value;draw();};
+    box.querySelector('#rlGo').onclick=()=>stepWheel(pool.filter(w=>sel.has(w.id)),'pick');
+    draw();
+  }
+
+  function drawWheel(canvas,items){
+    const size=canvas.clientWidth||300, dpr=window.devicePixelRatio||1;
+    canvas.width=canvas.height=size*dpr;
+    const c=canvas.getContext('2d'); c.scale(dpr,dpr);
+    const r=size/2, n=items.length, a=Math.PI*2/n;
+    const tones=[['#0B0B0B','#FFFFFF'],['#FFFFFF','#0B0B0B'],['#E4E3DF','#0B0B0B']];
+    const toneOf=i=>{ let t=i%3; if(i===n-1&&n>1&&t===0)t=3; return t===3?['#555555','#FFFFFF']:tones[t]; };
+    items.forEach((w,i)=>{
+      const [bg,fg]=toneOf(i);
+      const s0=-Math.PI/2+i*a;
+      c.beginPath();c.moveTo(r,r);c.arc(r,r,r-2,s0,s0+a);c.closePath();
+      c.fillStyle=bg;c.fill();c.strokeStyle='#0B0B0B';c.lineWidth=1;c.stroke();
+      if(n<=12){
+        c.save();c.translate(r,r);c.rotate(s0+a/2);
+        c.fillStyle=fg;c.textAlign='right';c.textBaseline='middle';
+        c.font=`500 ${n>8?10:12}px "Work Sans",sans-serif`;
+        let t=w.name; const lim=n>8?18:22; if(t.length>lim)t=t.slice(0,lim-1)+'…';
+        c.fillText(t,r-16,0);c.restore();
+      }
+    });
+    c.beginPath();c.arc(r,r,r-1,0,Math.PI*2);c.lineWidth=3;c.strokeStyle='#0B0B0B';c.stroke();
+  }
+
+  function stepWheel(items,from){
+    const n=items.length;
+    box.innerHTML=`<button class="close-btn" id="rlClose">✕</button>
+      <h2 class="serif" style="text-align:center">${from==='pick'?'Sua roleta':'Roleta da adega'}</h2>
+      <p class="rl-sub" style="text-align:center">${n} vinhos na roleta</p>
+      <div class="rl-stage"><div class="rl-pointer"></div><canvas id="rlCanvas"></canvas><div class="rl-hub"></div></div>
+      <div class="rl-result" id="rlResult"><button class="btn" id="rlSpin" style="padding:.85rem 2.2rem;font-size:1rem">Girar</button></div>
+      <div class="rl-foot" style="justify-content:center"><button class="btn-ghost" id="rlBack">Voltar</button></div>`;
+    const canvas=box.querySelector('#rlCanvas');
+    drawWheel(canvas,items);
+    box.querySelector('#rlClose').onclick=close;
+    box.querySelector('#rlBack').onclick=()=>{if(!spinning)(from==='pick'?stepPick:stepStart)();};
+    const res=box.querySelector('#rlResult');
+    const bindSpin=()=>{res.querySelector('#rlSpin').onclick=spin;};
+    bindSpin();
+    function spin(){
+      if(spinning)return; spinning=true;
+      res.innerHTML='<div class="rl-sub" style="padding:1.2rem 0">Girando...</div>';
+      const buf=new Uint32Array(2); crypto.getRandomValues(buf);
+      const win=buf[0]%n, a=360/n;
+      const jitter=((buf[1]/4294967295)-.5)*a*.7;
+      const target=-(win+.5)*a+jitter;
+      const cur=((rot%360)+360)%360;
+      let delta=((target-cur)%360+360)%360;
+      rot=rot+360*5+delta;
+      canvas.style.transform=`rotate(${rot}deg)`;
+      let done=false;
+      const finish=()=>{
+        if(done)return; done=true; spinning=false;
+        const w=items[win];
+        res.innerHTML=`<div class="lbl">A roleta escolheu</div><div class="win">${w.name}</div>
+          <div class="rl-actions"><button class="btn" id="rlSee">Ver vinho</button><button class="btn-outline" id="rlAgain">Girar de novo</button></div>`;
+        res.querySelector('#rlSee').onclick=()=>openWineModal(w.id);
+        res.querySelector('#rlAgain').onclick=()=>{res.innerHTML='<button class="btn" id="rlSpin" style="padding:.85rem 2.2rem;font-size:1rem">Girar</button>';bindSpin();spin();};
+      };
+      canvas.addEventListener('transitionend',finish,{once:true});
+      setTimeout(finish,5400);
+    }
+  }
+  stepStart();
+}
+function soldOf(w){return Number(w.sold)||0;}
+function rankedWines(){return wines.filter(w=>soldOf(w)>0).sort((a,b)=>soldOf(b)-soldOf(a)||String(a.name).localeCompare(String(b.name)));}
+function registerSale(id,delta){
+  const w=wines.find(x=>x.id===id); if(!w)return;
+  if(delta>0){ if(w.stock<=0)return; w.stock-=1; w.sold=soldOf(w)+1; w.lastSale=Date.now(); }
+  else{ if(soldOf(w)<=0)return; w.sold=soldOf(w)-1; w.stock+=1; }
+  saveWine(w); renderAdmin();
+}
+function adminRankingHtml(limit){
+  const esc=t=>String(t??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const all=rankedWines();
+  const tot=all.reduce((a,w)=>a+soldOf(w),0);
+  const rev=all.reduce((a,w)=>a+soldOf(w)*(Number(w.price)||0),0);
+  const top=all.slice(0,limit);
+  const max=top.length?soldOf(top[0]):1;
+  return `<div class="settings-card" style="margin-bottom:1.8rem">
+    <h2 class="serif">Mais vendidos</h2>
+    <p class="hint">${tot} garrafa${tot===1?'':'s'} vendida${tot===1?'':'s'} · faturamento de ${fmtPrice(rev)}. Cada saída (−) no estoque conta como venda. Ranking completo na aba Relatório.</p>
+    ${top.length?`<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Vinho</th><th>Vendidas</th><th></th><th>% do total</th><th>Estoque</th></tr></thead><tbody>
+      ${top.map((w,i)=>`<tr><td><b class="serif">${i+1}º</b></td><td>${esc(w.name)}</td><td>${soldOf(w)}</td><td><div class="rank-bar"><i style="width:${Math.round(soldOf(w)/max*100)}%"></i></div></td><td>${(soldOf(w)/tot*100).toFixed(0)}%</td><td>${w.stock}</td></tr>`).join('')}
+    </tbody></table></div>`:'<p class="hint">Ainda sem vendas registradas.</p>'}
+  </div>`;
+}
+function rankingPageHtml(){
+  const withSales=rankedWines().filter(w=>w.active&&w.stock>0);
+  const rest=availableWines().filter(w=>soldOf(w)<=0).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  const top=[...withSales,...rest].slice(0,10);
+  if(!top.length)return `<div class="empty-state"><h3>Ranking em breve</h3><p>Assim que os primeiros vinhos forem vendidos, os mais pedidos aparecem aqui.</p></div>`;
+  return `<section class="rank-page">
+    <h2 class="serif" style="font-size:1.5rem">Os mais pedidos</h2>
+    <p class="rank-sub">Os vinhos favoritos dos nossos clientes. Toque para ver os detalhes.</p>
+    <ol class="rank-list">${top.map((w,i)=>{
+      const img=w.thumb||w.image||'';
+      return `<li><button class="rank-item${i===0?' top':''}" data-rank="${w.id}">
+        <span class="rank-pos">${i+1}</span>
+        ${img?`<img class="rank-thumb" src="${escAttr(img)}" alt="" loading="lazy">`:''}
+        <span class="rank-info"><span class="rank-name">${esc(w.name)}</span><span class="rank-meta">${esc([w.country,w.grape].filter(Boolean).join(' · '))}</span></span>
+        ${i===0&&soldOf(w)>0?'<span class="rank-tag">Favorito</span>':`<span class="rank-price">${fmtPrice(w.price)}</span>`}
+      </button></li>`;}).join('')}</ol>
+  </section>`;
+}
+function changeStock(id,delta){
+  if(delta<0){registerSale(id,1);return;} /* cada saída (−) conta como venda no ranking */
+  const w=wines.find(x=>x.id===id); if(!w)return;
+  w.stock=Math.max(0,w.stock+delta);
+  saveWine(w); renderAdmin();
+}
+function toggleActive(id){
+  const w=wines.find(x=>x.id===id); if(!w)return;
+  w.active=!w.active; saveWine(w); renderAdmin();
+}
+function deleteWine(id){
+  if(!confirm('Excluir este vinho permanentemente?'))return;
+  const backup=wines.find(w=>w.id===id);
+  wines=wines.filter(w=>w.id!==id); renderAdmin();
+  deleteWineDoc(id).catch(e=>{
+    console.error('Erro ao excluir vinho no banco:',e);
+    if(backup&&!wines.some(w=>w.id===id)){wines.push(backup);}
+    renderAdmin();
+    alert('Não foi possível excluir: '+(e.code||e.message||'erro desconhecido')+'. Provavelmente as Regras do Firestore estão bloqueando exclusão — veja a aba "Regras" no console do Firebase.');
+  });
+}
+
+function openWineForm(id){
+  const editing=id!==null;
+  const w=editing?wines.find(x=>x.id===id):{name:'',image:'',price:'',country:'',region:'',grape:'',category:'Tinto',description:'',stock:0,active:true,colorCode:'',abv:'',sweetness:''};
+  const back=document.createElement('div');
+  back.className='modal-back';
+  back.innerHTML=`<div class="form-modal">
+    <h2 class="serif">${editing?'Editar vinho':'Novo vinho'}</h2>
+    <div class="f-grid">
+      <div class="full"><label>Nome</label><input id="fName" value="${escAttr(w.name)}"></div>
+      <div class="full">
+        <label>Foto da garrafa</label>
+        <div class="photo-pick">
+          <img id="fImagePreview" src="${escAttr(w.thumb||w.image||'')}" alt="" style="${(w.thumb||w.image)?'':'display:none'}">
+          <input id="fImageFile" type="file" accept="image/*">
+        </div>
+      </div>
+      <div><label>Preço (R$)</label><input id="fPrice" type="number" step="0.01" value="${w.price}"></div>
+      <div><label>Estoque</label><input id="fStock" type="number" value="${w.stock}"></div>
+      <div><label>Vendidos (ranking)</label><input id="fSold" type="number" min="0" value="${w.sold||0}"></div>
+      <div><label>País</label><input id="fCountry" value="${escAttr(w.country)}"></div>
+      <div><label>Região</label><input id="fRegion" value="${escAttr(w.region)}"></div>
+      <div><label>Uva</label><input id="fGrape" value="${escAttr(w.grape)}"></div>
+      <div><label>Categoria</label>
+        <select id="fCategory">
+          ${settings.categories.map(c=>`<option ${w.category===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div><label>Teor alcoólico (%)</label><input id="fAbv" type="number" step="0.1" min="0" max="100" value="${w.abv??''}"></div>
+      <div><label>Tipo</label>
+        <select id="fSweetness">
+          <option value="">—</option>
+          ${['Seco','Meio Seco','Suave'].map(s=>`<option ${w.sweetness===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="full"><label>Combina com (pratos da casa)</label>
+        ${[['entrada','Entradas'],['prato','Pratos principais']].map(([g,t])=>`<div style="font-size:.72rem;color:var(--text-muted);margin:.2rem 0 .35rem">${t}</div><div class="pair-pick">${settings.menu.filter(d=>d.group===g).map(d=>`<label><input type="checkbox" class="fDish" value="${escAttr(d.id)}" ${(w.dishes||[]).includes(d.id)?'checked':''}>${esc(d.name)}</label>`).join('')||'<span style="font-size:.78rem;color:var(--text-muted)">Nenhum prato cadastrado em Configurações.</span>'}</div>`).join('')}
+        <button type="button" class="btn-outline" id="fSuggestDishes" style="margin-top:.4rem;font-size:.78rem;padding:.35rem .8rem">Sugerir pelo estilo do vinho</button>
+      </div>
+      <div class="full"><label>Descrição</label><textarea id="fDesc" rows="2">${w.description||''}</textarea></div>
+      <div><label>Código de cor interno</label>
+        <select id="fColor">
+          <option value="">—</option>
+          ${['Vermelho','Azul','Dourado','Preto','Amarelo','Prata'].map(c=>`<option ${w.colorCode===c?'selected':''}>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div><label>Status</label>
+        <div class="toggle-row"><input type="checkbox" id="fActive" ${w.active?'checked':''}><span>Ativo (visível no catálogo)</span></div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-outline" id="cancelForm">Cancelar</button>
+      <button class="btn" id="saveForm">Salvar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(back);
+  back.onclick=e=>{if(e.target===back)back.remove();};
+  document.getElementById('cancelForm').onclick=()=>back.remove();
+  document.getElementById('fSuggestDishes').onclick=()=>{
+    const sug=suggestDishes({category:document.getElementById('fCategory').value,grape:document.getElementById('fGrape').value});
+    document.querySelectorAll('.fDish').forEach(i=>{i.checked=sug.includes(i.value);});
+  };
+  let pendingImage=null,pendingThumb=null;
+  document.getElementById('fImageFile').onchange=async e=>{
+    const file=e.target.files[0]; if(!file)return;
+    const preview=document.getElementById('fImagePreview');
+    try{
+      [pendingImage,pendingThumb]=await Promise.all([resizeImage(file,1000,0.85),resizeImage(file,560,0.75)]);
+      preview.src=pendingThumb;
+      preview.style.display='';
+    }catch(err){
+      console.error('Erro ao processar foto:',err);
+      alert('Não foi possível usar essa foto. Tente outra imagem.');
+    }
+  };
+  document.getElementById('saveForm').onclick=()=>{
+    const saveBtn=document.getElementById('saveForm');
+    const imageUrl=pendingImage||w.image||'';
+    const thumbUrl=pendingThumb||w.thumb||w.image||'';
+    const data={
+      name:document.getElementById('fName').value.trim(),
+      image:imageUrl,
+      thumb:thumbUrl,
+      photoStd:pendingImage?true:!!w.photoStd,
+      price:Number(document.getElementById('fPrice').value)||0,
+      stock:Math.max(0,Number(document.getElementById('fStock').value)||0),
+      sold:Math.max(0,Number(document.getElementById('fSold').value)||0),
+      country:document.getElementById('fCountry').value.trim(),
+      region:document.getElementById('fRegion').value.trim(),
+      grape:document.getElementById('fGrape').value.trim(),
+      category:document.getElementById('fCategory').value,
+      abv:document.getElementById('fAbv').value===''?null:Number(document.getElementById('fAbv').value),
+      sweetness:document.getElementById('fSweetness').value,
+      dishes:[...document.querySelectorAll('.fDish:checked')].map(i=>i.value),
+      description:document.getElementById('fDesc').value.trim(),
+      colorCode:document.getElementById('fColor').value,
+      active:document.getElementById('fActive').checked,
+    };
+    if(!data.name){alert('Informe o nome do vinho.');saveBtn.disabled=false;saveBtn.textContent='Salvar';return;}
+    let saved;
+    if(editing){Object.assign(w,data);saved=w;}
+    else{saved={id:nextId(),...data};wines.push(saved);}
+    saveWine(saved); back.remove(); renderAdmin();
+  };
+}
+
+function openBulkImportModal(){
+  const back=document.createElement('div');
+  back.className='modal-back';
+  back.innerHTML=`<div class="form-modal">
+    <h2 class="serif">Importar vinhos em lote</h2>
+    <p class="hint">Cole abaixo uma lista de vinhos em formato JSON (um array de objetos) e clique em Importar. Cada vinho vira um item novo no catálogo — depois é só adicionar a foto de cada um.</p>
+    <textarea id="bulkImportText" rows="12" style="width:100%;font-family:monospace;font-size:.8rem" placeholder='[{"name":"Nome do vinho","country":"Chile","region":"...","grape":"...","category":"Tinto","price":89,"stock":6,"abv":13.5,"sweetness":"Seco","description":"...","active":true}]'></textarea>
+    <div class="err" id="bulkImportErr"></div>
+    <div class="form-actions">
+      <button class="btn-outline" id="cancelBulkImport">Cancelar</button>
+      <button class="btn" id="confirmBulkImport">Importar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(back);
+  back.onclick=e=>{if(e.target===back)back.remove();};
+  document.getElementById('cancelBulkImport').onclick=()=>back.remove();
+  document.getElementById('confirmBulkImport').onclick=()=>{
+    const errEl=document.getElementById('bulkImportErr');
+    errEl.textContent='';
+    let list;
+    try{
+      list=JSON.parse(document.getElementById('bulkImportText').value);
+      if(!Array.isArray(list)||!list.length)throw new Error('O texto colado precisa ser uma lista (array) de vinhos.');
+    }catch(e){errEl.textContent='JSON inválido: '+e.message;return;}
+    let id=nextId();
+    const toSave=list.map(w=>{
+      const saved={
+        id:id++,
+        name:String(w.name||'').trim(),
+        image:w.image||'',
+        thumb:w.thumb||w.image||'',
+        price:Number(w.price)||0,
+        stock:Math.max(0,Number(w.stock)||0),
+        country:String(w.country||'').trim(),
+        region:String(w.region||'').trim(),
+        grape:String(w.grape||'').trim(),
+        category:String(w.category||settings.categories[0]||'').trim(),
+        abv:w.abv==null||w.abv===''?null:Number(w.abv),
+        sweetness:w.sweetness||'',
+        dishes:Array.isArray(w.dishes)?w.dishes:[],
+        description:String(w.description||'').trim(),
+        colorCode:w.colorCode||'',
+        active:w.active!==false,
+      };
+      wines.push(saved);
+      return saved;
+    });
+    toSave.forEach(saveWine);
+    back.remove();
+    renderAdmin();
+    alert(toSave.length+' vinho(s) importado(s) com sucesso.');
+  };
+}
+
+function downloadBackup(){
+  const blob=new Blob([JSON.stringify(wines,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const stamp=new Date().toISOString().slice(0,10);
+  a.href=url; a.download='backup-vinhos-'+stamp+'.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function openShareModal(){
+  const link=location.origin+location.pathname+'#catalogo';
+  const qrUrl='https://api.qrserver.com/v1/create-qr-code/?size=400x400&data='+encodeURIComponent(link);
+  const back=document.createElement('div');
+  back.className='modal-back';
+  back.innerHTML=`<div class="form-modal share-modal">
+    <h2 class="serif">Divulgar cardápio</h2>
+    <p class="hint">Envie este link aos clientes ou baixe o QR Code para colocar nas mesas.</p>
+    <div class="share-link-row">
+      <input id="shareLinkInput" readonly value="${escAttr(link)}">
+      <button class="btn-outline" id="copyLinkBtn">Copiar</button>
+    </div>
+    <div class="share-qr"><img src="${qrUrl}" alt="QR Code do cardápio" width="220" height="220"></div>
+    <div class="form-actions">
+      <button class="btn-outline" id="closeShare">Fechar</button>
+      <button class="btn" id="downloadQrBtn">Baixar QR Code</button>
+    </div>
+  </div>`;
+  document.body.appendChild(back);
+  back.onclick=e=>{if(e.target===back)back.remove();};
+  document.getElementById('closeShare').onclick=()=>back.remove();
+  document.getElementById('copyLinkBtn').onclick=()=>{
+    const input=document.getElementById('shareLinkInput');
+    const btn=document.getElementById('copyLinkBtn');
+    const done=()=>{btn.textContent='Copiado!';setTimeout(()=>btn.textContent='Copiar',1500);};
+    if(navigator.clipboard&&window.isSecureContext){
+      navigator.clipboard.writeText(link).then(done).catch(()=>{input.select();document.execCommand('copy');done();});
+    }else{input.select();document.execCommand('copy');done();}
+  };
+  document.getElementById('downloadQrBtn').onclick=()=>{
+    fetch(qrUrl).then(r=>r.blob()).then(blob=>{
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download='qrcode-cardapio.png'; a.click();
+      URL.revokeObjectURL(url);
+    }).catch(()=>window.open(qrUrl,'_blank'));
+  };
+}
+
+route();
+</script>
+</body>
+</html>
